@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        input {
+            padding: 10px;
+            width: 200px;
+            margin: 10px;
+        }
+        button {
+            padding: 10px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            margin-left: 5px;
+        }
+        table {
+            width: 50%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            display: none; /* Hide table initially */
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        #error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Search Student</h2>
+    <input type="text" id="studentId" placeholder="Enter Student ID">
+    <button onclick="fetchStudent()">Search</button>
+
+    <p id="error"></p>
+
+    <table id="studentTable">
+        <thead>
+            <tr id="tableHead"></tr>
+        </thead>
+        <tbody id="tableBody"></tbody>  <!-- Fixed tbody issue -->
+    </table>
+
+    <script>
+        function fetchStudent() {
+            let studentId = document.getElementById("studentId").value;
+            let table = document.getElementById("studentTable");
+            let errorText = document.getElementById("error");
+            let tableHead = document.getElementById("tableHead");
+            let tableBody = document.getElementById("tableBody");
+
+            if (!studentId) {
+                errorText.innerText = "Please enter a Student ID.";
+                table.style.display = "none";
+                return;
+            }
+
+            fetch(`http://127.0.0.1:5000/student?id=${studentId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        errorText.innerText = data.error;
+                        table.style.display = "none";
+                    } else {
+                        // Clear previous table data
+                        tableHead.innerHTML = "";
+                        tableBody.innerHTML = "";
+
+                        // Create table headers
+                        let headerRow = document.createElement("tr"); // Fixed header row issue
+                        for (let key in data) {
+                            let th = document.createElement("th");
+                            th.innerText = key.charAt(0).toUpperCase() + key.slice(1);
+                            headerRow.appendChild(th);
+                        }
+                        tableHead.appendChild(headerRow);
+
+                        // Create table row with student data
+                        let dataRow = document.createElement("tr"); // Create a new row for data
+                        for (let key in data) {
+                            let td = document.createElement("td");
+                            td.innerText = data[key];
+                            dataRow.appendChild(td);
+                        }
+                        tableBody.appendChild(dataRow); // Append data row to tbody
+
+                        table.style.display = "table";
+                        errorText.innerText = "";
+                    }
+                })
+                .catch(error => {
+                    errorText.innerText = "Error fetching data.";
+                    table.style.display = "none";
+                    console.error("Error:", error);
+                });
+        }
+    </script>
+
+</body>
+</html>
